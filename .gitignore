@@ -1,0 +1,19 @@
+# 依赖
+node_modules/
+
+# 构建与发布产物
+dist/
+*.zip
+
+# 日志与本地杂项
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+
+# 不要把密钥提交上去
+.env
+.env.*
+*.key
+*.pem
+secrets*.json

@@ -1,0 +1,5 @@
+# dsh-demo-plugin bundle patch：把插件作为一行挂进 profile。
+# id 是自己起的短名，name 必须等于 package.json 的 name。
+- insert:
+    - id: demo-plugin
+      name: 'dsh-demo-plugin'

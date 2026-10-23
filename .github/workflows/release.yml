@@ -1,0 +1,45 @@
+name: Release
+
+# 只有打 tag（形如 v0.2.0）才触发：自动打包成 zip 并创建 GitHub Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 打包并发布 ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 取出代码
+        uses: actions/checkout@v4
+
+      - name: 装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 发布前再验一遍（测试不过就不发）
+        run: npm run verify
+
+      - name: 打 zip（别人下载后可直接本地安装）
+        run: |
+          set -euo pipefail
+          NAME="$(node -p "require('./package.json').name")"
+          VERSION="$(node -p "require('./package.json').version")"
+          mkdir -p dist
+          zip -r "dist/${NAME}-${VERSION}.zip" . \
+            -x ".git/*" -x "dist/*" -x "node_modules/*" -x ".github/*" \
+            -x "*.cmd" -x "scripts/*" -x ".gitignore"
+          echo "ZIP=dist/${NAME}-${VERSION}.zip" >> "$GITHUB_ENV"
+          ls -lh dist
+
+      - name: 创建 GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" "$ZIP" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes
